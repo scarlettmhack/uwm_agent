@@ -22,7 +22,10 @@
 import os, osproc, strutils, math, terminal, json, times, nativesockets, ospaths, posix, httpclient
 
 const agent_version = 0.01
-let token = paramStr(1)
+
+let id = paramStr(1)
+let token = paramStr(2)
+
 var mem_total_gb, mem_free_gb, mem_avaliable_gb, mem_used, mem_used_no_cached,
   mem_buffers_gb, mem_cached_gb, swap_total_gb, swap_free_gb, mem_total_kb,
   mem_free_kb, mem_avaliable_kb, mem_buffers_kb, mem_cached_kb, swap_total_kb,
@@ -80,6 +83,7 @@ for a in lines("/proc/uptime"):
 cores = execCmdEx("/usr/bin/nproc --all").output.strip.parse_int
 
 var data = parseJson("{}")
+data.add("id", %id)
 data.add("token", %token)
 data.add("hostOS", %hostOS)
 data.add("hostCPU", %hostCPU)
@@ -119,7 +123,7 @@ for a in df_result:
 
 echo data.pretty
 
-let client = newHttpClient()
+let client = newHttpClient(timeout=9000)
 client.headers = newHttpHeaders({ "Content-Type": "application/json" })
 let response = client.request("http://www.uwebmonitor.com/site/api/api.php", httpMethod = HttpPost, body = $data)
 echo response.status
