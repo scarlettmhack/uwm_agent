@@ -23,13 +23,17 @@ import os, osproc, strutils, math, terminal, json, times, nativesockets, ospaths
 
 const agent_version = 0.01
 
+proc pretty_float(feo: string): JsonNode =
+  result = %round(feo.parse_float,2)
+
 let id = paramStr(1)
 let token = paramStr(2)
 
 var mem_total_gb, mem_free_gb, mem_avaliable_gb, mem_used, mem_used_no_cached,
   mem_buffers_gb, mem_cached_gb, swap_total_gb, swap_free_gb, mem_total_kb,
   mem_free_kb, mem_avaliable_kb, mem_buffers_kb, mem_cached_kb, swap_total_kb,
-  swap_free_kb, swap_used, cpu_1min, cpu_5min, cpu_10min, uptime_server: float
+  swap_free_kb, swap_used, uptime_server: float
+var cpu_5min, cpu_10min, cpu_1min : JsonNode
 var cores, total_proces: int
 
 
@@ -70,9 +74,9 @@ swap_used = 100-(swap_free_kb*100)/swap_total_kb
 
 for a in lines("/proc/loadavg"):
   var uptime_array = a.splitWhitespace()
-  cpu_1min = uptime_array[0].parse_float
-  cpu_5min = uptime_array[1].parse_float
-  cpu_10min = uptime_array[2].parse_float
+  cpu_1min = uptime_array[0].pretty_float
+  cpu_5min = uptime_array[1].pretty_float
+  cpu_10min = uptime_array[2].pretty_float
   var process_array = uptime_array[3].split("/")
   total_proces = process_array[1].parse_int
 
@@ -81,6 +85,10 @@ for a in lines("/proc/uptime"):
   uptime_server = uptime_array[0].parse_float
 
 cores = execCmdEx("/usr/bin/nproc --all").output.strip.parse_int
+
+
+
+
 
 var data = parseJson("{}")
 data.add("id", %id)
@@ -96,9 +104,9 @@ data.add("agentinfo_getHomeDir", %getHomeDir())
 data.add("time", %($now()))
 data.add("epochtime", %round(epochTime()))
 data.add("uptime", %round(uptime_server))
-data.add("cpu_1min", %round(cpu_1min,2))
-data.add("cpu_5min", %round(cpu_5min,2))
-data.add("cpu_10min", %round(cpu_10min,2))
+data.add("cpu_1min", cpu_1min)
+data.add("cpu_5min", cpu_5min)
+data.add("cpu_10min", cpu_10min)
 data.add("mem_total_gb", %round(mem_total_gb,2))
 data.add("mem_free_gb", %round(mem_free_gb,2))
 data.add("mem_avaliable_gb", %round(mem_avaliable_gb,2))
@@ -126,5 +134,7 @@ echo data.pretty
 let client = newHttpClient(timeout=9000)
 client.headers = newHttpHeaders({ "Content-Type": "application/json" })
 let response = client.request("http://www.uwebmonitor.com/site/api/api.php", httpMethod = HttpPost, body = $data)
-echo response.status
+echo "HTML : "&response.body
+echo "CODE RESPONSE : "&response.status
+
 
