@@ -16,45 +16,18 @@
 # Tested on:
 # - CentOS7 (15/09/2108)
 
-# Version 0.1 (15/09/2108)
+# Version 0.01 (15/09/2108)
 # - Send JSON to URL
 
-import os,osproc,strutils
-import math
-import terminal
-import json
-import times
-import nativesockets
-import ospaths
-import posix
-import httpclient
+import os, osproc, strutils, math, terminal, json, times, nativesockets, ospaths, posix, httpclient
 
-
-var token = paramStr(1)
-var agent_version = 0.02
-var mem_total_gb: float
-var mem_free_gb: float
-var mem_avaliable_gb: float
-var mem_used: float
-var mem_used_no_cached: float
-var mem_buffers_gb: float
-var mem_cached_gb: float
-var swap_total_gb: float
-var swap_free_gb: float
-var mem_total_kb: float
-var mem_free_kb: float
-var mem_avaliable_kb: float
-var mem_buffers_kb: float
-var mem_cached_kb: float
-var swap_total_kb: float
-var swap_free_kb: float
-var swap_used: float
-var cpu_1min: float
-var cpu_5min: float
-var cpu_10min: float
-var total_proces: int
-var uptime_server: float
-var cores: int
+const agent_version = 0.01
+let token = paramStr(1)
+var mem_total_gb, mem_free_gb, mem_avaliable_gb, mem_used, mem_used_no_cached,
+  mem_buffers_gb, mem_cached_gb, swap_total_gb, swap_free_gb, mem_total_kb,
+  mem_free_kb, mem_avaliable_kb, mem_buffers_kb, mem_cached_kb, swap_total_kb,
+  swap_free_kb, swap_used, cpu_1min, cpu_5min, cpu_10min, uptime_server: float
+var cores, total_proces: int
 
 
 for a in lines("/proc/meminfo"):
